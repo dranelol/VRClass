@@ -33,6 +33,8 @@ public class VRPlayerController : MonoBehaviour
 
     public bool DimScreen;
 
+    public bool TunnelVision;
+
     private Rigidbody rigidbody;
 
     public float MovementSpeed;
@@ -58,8 +60,6 @@ public class VRPlayerController : MonoBehaviour
     private bool moving;
 
     public Animator Anim;
-
-    public bool TunnelVision;
 
     public VignetteAndChromaticAberration Vignette;
 
@@ -125,8 +125,6 @@ public class VRPlayerController : MonoBehaviour
 
                 movePosition(rigidbody.position + movement);
 
-                
-
                 break;
             }
 
@@ -182,7 +180,7 @@ public class VRPlayerController : MonoBehaviour
                     float horizontal = Input.GetAxisRaw("Horizontal");
                     float vertical = Input.GetAxisRaw("Vertical");
                     Vector3 movement = SegmentSpeed * MovementSpeed * (transform.forward * vertical * ForwardSpeed + transform.right * horizontal * StrafeSpeed) * Time.deltaTime;
-
+                    /*
                     if (DimScreen == true)
                     {
                         if (movement != Vector3.zero)
@@ -211,7 +209,7 @@ public class VRPlayerController : MonoBehaviour
                             }
                         }
                     }
-
+                    */
                     movePosition(rigidbody.position + movement);
                 }
 
@@ -361,6 +359,61 @@ public class VRPlayerController : MonoBehaviour
         
 	}
 
+    public void SetVignette(bool vignette)
+    {
+        if (vignette == true)
+        {
+            Vignette.enabled = true;
+            Cam.fieldOfView = 90;
+        }
+
+        else
+        {
+            Vignette.enabled = false;
+            Cam.fieldOfView = 60;
+        }
+    }
+
+    public void SetDimScreen(bool dim)
+    {
+        DimScreen = dim;
+    }
+
+    public void ChangeNavMethod(int method)
+    {
+        switch(method)
+        {
+            case 0:
+                NavMethod = NavigationMethod.normalLinear;
+
+                break;
+
+            case 1:
+                NavMethod = NavigationMethod.normalAccel;
+
+                break;
+
+            case 2:
+                NavMethod = NavigationMethod.segment;
+
+                break;
+
+            case 3:
+                NavMethod = NavigationMethod.normalLinearLerp;
+
+                break;
+
+            case 4:
+                NavMethod = NavigationMethod.normalAccelLerp;
+
+                break;
+
+            case 5:
+                NavMethod = NavigationMethod.segmentLerp;
+
+                break;
+        }
+    }
     IEnumerator curtainOn()
     {
         float t = 0.0f;

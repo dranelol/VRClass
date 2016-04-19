@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public class PathFollowing : MonoBehaviour
+public class LightPath : MonoBehaviour
 {
     private Vector3 targetPosition;
 
@@ -22,6 +22,9 @@ public class PathFollowing : MonoBehaviour
 
     [SerializeField]
     private List<GameObject> waypoints = new List<GameObject>();
+
+    [SerializeField]
+    private bool ignoreY;
 
     void Awake()
     {
@@ -42,7 +45,17 @@ public class PathFollowing : MonoBehaviour
             Vector3 toWaypoint = nextWaypoint.transform.position - transform.position;
 
             toWaypoint.Normalize();
-            transform.position += toWaypoint * speed * Time.deltaTime;
+
+            Vector3 deltaPos = toWaypoint * speed * Time.deltaTime;
+            
+            if(ignoreY == true)
+            {
+                deltaPos.y = 0.0f;
+                
+            }
+
+            transform.position += deltaPos;
+            
         }
 
         else

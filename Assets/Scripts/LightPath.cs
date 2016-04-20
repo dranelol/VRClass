@@ -21,51 +21,69 @@ public class LightPath : MonoBehaviour
     private float speed;
 
     [SerializeField]
-    private List<GameObject> waypoints = new List<GameObject>();
+    public List<GameObject> Waypoints = new List<GameObject>();
 
     [SerializeField]
     private bool ignoreY;
 
     void Awake()
     {
-        nextWaypoint = waypoints[waypoints.Count - 1];
-        waypoints.Remove(nextWaypoint);
+        
     }
     // Use this for initialization
     void Start()
     {
-
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Vector3.Distance(transform.position, nextWaypoint.transform.position) >= 0.1f)
-        {
-            Vector3 toWaypoint = nextWaypoint.transform.position - transform.position;
-
-            toWaypoint.Normalize();
-
-            Vector3 deltaPos = toWaypoint * speed * Time.deltaTime;
-            
-            if(ignoreY == true)
+        //if(nextWaypoint != null)
+        //{
+            if (Vector3.Distance(transform.position, nextWaypoint.transform.position) >= 0.2f)
             {
-                deltaPos.y = 0.0f;
-                
+                Vector3 toWaypoint = nextWaypoint.transform.position - transform.position;
+
+                toWaypoint.Normalize();
+
+                Vector3 deltaPos = toWaypoint * speed * Time.deltaTime;
+
+                if (ignoreY == true)
+                {
+                    deltaPos.y = 0.0f;
+
+                }
+
+                transform.position += deltaPos;
+
             }
 
-            transform.position += deltaPos;
-            
-        }
-
-        else
-        {
-            if (waypoints.Count > 0)
+            else if(ignoreY == true && Vector2.Distance(new Vector2(transform.position.x, transform.position.z), new Vector2(nextWaypoint.transform.position.x, nextWaypoint.transform.position.z)) < 0.2f)
             {
-                nextWaypoint = waypoints[waypoints.Count - 1];
-                waypoints.Remove(nextWaypoint);
+                if (Waypoints.Count > 0)
+                {
+                    nextWaypoint = Waypoints[0];
+                    Waypoints.Remove(nextWaypoint);
+                }
             }
-        }
 
+            else
+            {
+                if (Waypoints.Count > 0)
+                {
+                    nextWaypoint = Waypoints[0];
+                    Waypoints.Remove(nextWaypoint);
+                }
+            }
+        //}
+    }
+
+    public void StartPath()
+    {
+        nextWaypoint = Waypoints[0];
+        Waypoints.Remove(nextWaypoint);
+
+        Debug.Log(nextWaypoint.gameObject.name);
     }
 }

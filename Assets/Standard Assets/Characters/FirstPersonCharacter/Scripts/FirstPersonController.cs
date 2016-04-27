@@ -1,11 +1,36 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
+using UnityStandardAssets.ImageEffects;
 using Random = UnityEngine.Random;
+
+
 
 namespace UnityStandardAssets.Characters.FirstPerson
 {
+    public enum NavigationMethod
+    {
+        normalLinear,
+        normalAccel,
+        segment,
+        normalLinearLerp,
+        normalAccelLerp,
+        segmentLerp
+    }
+
+    public enum CurtainState
+    {
+        turningOn,
+        on,
+        turnOnDelay,
+        turningOff,
+        off,
+        turnOffDelay
+    }
+
     [RequireComponent(typeof (CharacterController))]
     [RequireComponent(typeof (AudioSource))]
     public class FirstPersonController : MonoBehaviour
@@ -27,6 +52,22 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
+        
+        
+        
+        [SerializeField] private VignetteAndChromaticAberration Vignette;
+        [SerializeField] private Camera Cam;
+        [SerializeField] private bool DimScreen;
+        [SerializeField] private Image Curtain;
+
+        public float DimTime;
+
+        public float DimDelay;
+
+        public NavigationMethod NavMethod;
+
+        public CurtainState CurState;
+
 
         private Camera m_Camera;
         private bool m_Jump;
@@ -41,6 +82,104 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float m_NextStep;
         private bool m_Jumping;
         private AudioSource m_AudioSource;
+
+        public void SetVignette(bool vignette)
+        {
+            if (vignette == true)
+            {
+                Vignette.enabled = true;
+                Cam.fieldOfView = 90;
+            }
+
+            else
+            {
+                Vignette.enabled = false;
+                Cam.fieldOfView = 60;
+            }
+        }
+
+        public void SetDimScreen(bool dim)
+        {
+            DimScreen = dim;
+        }
+
+        public void SetHeadBob(bool bob)
+        {
+            m_UseHeadBob = bob;
+        }
+
+        private IEnumerator curtainOn()
+        {
+            float t = 0.0f;
+
+            float seconds = DimTime;
+
+            float start = Curtain.color.a;
+
+            float end = 1.0f;
+
+            CurState = CurtainState.turningOn;
+
+            while (t <= 1.0f)
+            {
+                t += Time.deltaTime / seconds;
+
+                float alpha = Mathf.Lerp(start, end, t);
+
+                Color newColor = Curtain.color;
+
+                newColor.a = alpha;
+
+                Curtain.color = newColor;
+
+                yield return new WaitForFixedUpdate();
+            }
+
+            CurState = CurtainState.turnOnDelay;
+
+            yield return new WaitForSeconds(DimDelay);
+
+            CurState = CurtainState.on;
+
+            yield return null;
+        }
+
+        private IEnumerator curtainOff()
+        {
+            float t = 0.0f;
+
+            float seconds = DimTime;
+
+            float start = Curtain.color.a;
+
+            float end = 0.0f;
+
+            CurState = CurtainState.turningOff;
+
+            while (t <= 1.0f)
+            {
+                t += Time.deltaTime / seconds;
+
+                float alpha = Mathf.Lerp(start, end, t);
+
+                Color newColor = Curtain.color;
+
+                newColor.a = alpha;
+
+                Curtain.color = newColor;
+
+                yield return new WaitForFixedUpdate();
+            }
+
+            CurState = CurtainState.turnOffDelay;
+
+            yield return new WaitForSeconds(DimDelay);
+
+            CurState = CurtainState.off;
+
+            yield return null;
+        }
+
 
         // Use this for initialization
         private void Start()

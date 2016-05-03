@@ -59,6 +59,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private Camera Cam;
         [SerializeField] private bool DimScreen;
         [SerializeField] private Image Curtain;
+        private bool lerpMoving;
 
         public float DimTime;
 
@@ -341,8 +342,91 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void GetInput(out float speed)
         {
             // Read input
-            float horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
-            float vertical = CrossPlatformInputManager.GetAxis("Vertical");
+            float horizontal = 0.0f;
+            float vertical = 0.0f;
+
+            if(NavMethod == NavigationMethod.normalLinear)
+            {
+                horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+            }
+
+            else if(NavMethod == NavigationMethod.normalAccel)
+            {
+                horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
+                vertical = CrossPlatformInputManager.GetAxis("Vertical");
+            }
+
+            else if (NavMethod == NavigationMethod.segment)
+            {
+                if (Input.GetKeyDown(KeyCode.W)
+                || Input.GetKeyDown(KeyCode.S)
+                || Input.GetKeyDown(KeyCode.A)
+                || Input.GetKeyDown(KeyCode.D))
+                {
+                    horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                    vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+                }
+            }
+
+            else if(NavMethod == NavigationMethod.normalLinearLerp)
+            {
+                if(lerpMoving == false)
+                {
+                    if(Input.GetKey(KeyCode.W)
+                    || Input.GetKey(KeyCode.S)
+                    || Input.GetKey(KeyCode.A)
+                    || Input.GetKey(KeyCode.D))
+                    {
+                        lerpMoving = true;
+
+                        horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                        vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+
+                       
+                    }
+                }
+            }
+
+            else if (NavMethod == NavigationMethod.normalAccelLerp)
+            {
+                if (lerpMoving == false)
+                {
+                    if (Input.GetKey(KeyCode.W)
+                    || Input.GetKey(KeyCode.S)
+                    || Input.GetKey(KeyCode.A)
+                    || Input.GetKey(KeyCode.D))
+                    {
+                        lerpMoving = true;
+
+                        horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                        vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+
+
+                    }
+                }
+            }
+
+            else if (NavMethod == NavigationMethod.segmentLerp)
+            {
+                if (lerpMoving == false)
+                {
+                    if (Input.GetKey(KeyCode.W)
+                    || Input.GetKey(KeyCode.S)
+                    || Input.GetKey(KeyCode.A)
+                    || Input.GetKey(KeyCode.D))
+                    {
+                        lerpMoving = true;
+
+                        horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                        vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+
+
+                    }
+                }
+            }
+
+            
 
             bool waswalking = m_IsWalking;
 

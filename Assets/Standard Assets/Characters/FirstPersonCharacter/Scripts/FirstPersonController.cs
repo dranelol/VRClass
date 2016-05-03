@@ -37,7 +37,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
     {
         [SerializeField] private bool m_IsWalking;
         [SerializeField] private float m_WalkSpeed;
-        [SerializeField] private float m_RunSpeed;
+        [SerializeField]
+        private float m_RunSpeed;
+        [SerializeField]
+        private float segmentSpeed;
         [SerializeField] [Range(0f, 1f)] private float m_RunstepLenghten;
         [SerializeField] private float m_JumpSpeed;
         [SerializeField] private float m_StickToGroundForce;
@@ -68,7 +71,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         public NavigationMethod NavMethod;
 
         public CurtainState CurState;
-
+        public float LerpTime;
+        public int LerpSegments;
 
         private Camera m_Camera;
         private bool m_Jump;
@@ -236,19 +240,228 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             float speed;
             GetInput(out speed);
+
             // always move along the camera forward as it is the direction that it being aimed at
             Vector3 desiredMove = transform.forward*m_Input.y + transform.right*m_Input.x;
 
+            if(NavMethod == NavigationMethod.segmentLerp)
+            {
+                
+            }
+
+
+            else
+            {
+                MovePosition(desiredMove, speed);
+            }
+            
+        }
+
+        private void MovePosition(Vector3 destination, float speed)
+        {
             // get a normal for the surface that is being touched to move along it
             RaycastHit hitInfo;
             Physics.SphereCast(transform.position, m_CharacterController.radius, Vector3.down, out hitInfo,
-                               m_CharacterController.height/2f);
+                               m_CharacterController.height / 2f);
 
-            desiredMove = Vector3.ProjectOnPlane(desiredMove, hitInfo.normal).normalized;
+            destination = Vector3.ProjectOnPlane(destination, hitInfo.normal);//.normalized;
 
-            m_MoveDir.x = desiredMove.x*speed;
-            m_MoveDir.z = desiredMove.z*speed;
+            m_MoveDir.x = destination.x * speed;
+            m_MoveDir.z = destination.z * speed;
 
+            Debug.Log("speed: " + speed);
+
+            switch (NavMethod)
+            {
+                case NavigationMethod.normalLinear:
+                    {
+                        if (DimScreen == true)
+                        {
+                            if (destination != Vector3.zero)
+                            {
+                                switch (CurState)
+                                {
+                                    case CurtainState.off:
+                                        {
+                                            StartCoroutine(curtainOn());
+
+                                            break;
+                                        }
+                                }
+                            }
+
+                            if (destination == Vector3.zero)
+                            {
+                                switch (CurState)
+                                {
+                                    case CurtainState.on:
+                                        {
+                                            StartCoroutine(curtainOff());
+
+                                            break;
+                                        }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                case NavigationMethod.normalAccel:
+                    {
+                        if (DimScreen == true)
+                        {
+                            if (destination != Vector3.zero)
+                            {
+                                switch (CurState)
+                                {
+                                    case CurtainState.off:
+                                        {
+                                            StartCoroutine(curtainOn());
+
+                                            break;
+                                        }
+                                }
+                            }
+
+                            if (destination == Vector3.zero)
+                            {
+                                switch (CurState)
+                                {
+                                    case CurtainState.on:
+                                        {
+                                            StartCoroutine(curtainOff());
+
+                                            break;
+                                        }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                case NavigationMethod.segment:
+                    {
+                        if (Input.GetKeyDown(KeyCode.W)
+                        || Input.GetKeyDown(KeyCode.S)
+                        || Input.GetKeyDown(KeyCode.A)
+                        || Input.GetKeyDown(KeyCode.D))
+                        {
+
+                            PlayFootStepAudio();
+                        }
+
+                        break;
+                    }
+
+                case NavigationMethod.normalLinearLerp:
+                    {
+                        if (lerpMoving == false)
+                        {
+                            if (Input.GetKey(KeyCode.W)
+                            || Input.GetKey(KeyCode.S)
+                            || Input.GetKey(KeyCode.A)
+                            || Input.GetKey(KeyCode.D))
+                            {
+                                lerpMoving = true;
+
+                                if (DimScreen == true)
+                                {
+                                    if (destination != Vector3.zero)
+                                    {
+                                        switch (CurState)
+                                        {
+                                            case CurtainState.off:
+                                                {
+                                                    StartCoroutine(curtainOn());
+
+                                                    break;
+                                                }
+                                        }
+                                    }
+                                }
+
+                                //StartCoroutine(lerpMovement(rigidbody.position + movement, LerpTime));
+                                
+                            }
+
+                            else
+                            {
+                                if (DimScreen == true)
+                                {
+                                    switch (CurState)
+                                    {
+                                        case CurtainState.on:
+                                            {
+                                                StartCoroutine(curtainOff());
+
+                                                break;
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+
+                case NavigationMethod.normalAccelLerp:
+                    {
+                        if (lerpMoving == false)
+                        {
+                            if (Input.GetKey(KeyCode.W)
+                            || Input.GetKey(KeyCode.S)
+                            || Input.GetKey(KeyCode.A)
+                            || Input.GetKey(KeyCode.D))
+                            {
+                                lerpMoving = true;
+
+                                if (DimScreen == true)
+                                {
+                                    if (destination != Vector3.zero)
+                                    {
+                                        switch (CurState)
+                                        {
+                                            case CurtainState.off:
+                                                {
+                                                    StartCoroutine(curtainOn());
+
+                                                    break;
+                                                }
+                                        }
+                                    }
+                                }
+
+                                //StartCoroutine(lerpMovement(rigidbody.position + movement, LerpTime));
+                                
+                            }
+                            else
+                            {
+                                if (DimScreen == true)
+                                {
+                                    switch (CurState)
+                                    {
+                                        case CurtainState.on:
+                                            {
+                                                StartCoroutine(curtainOff());
+
+                                                break;
+                                            }
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                case NavigationMethod.segmentLerp:
+                    {
+                        PlayFootStepAudio();
+
+                        break;
+                    }
+            }
 
             if (m_CharacterController.isGrounded)
             {
@@ -264,14 +477,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
             else
             {
-                m_MoveDir += Physics.gravity*m_GravityMultiplier*Time.fixedDeltaTime;
+                m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
             }
-            m_CollisionFlags = m_CharacterController.Move(m_MoveDir*Time.fixedDeltaTime);
 
-            ProgressStepCycle(speed);
+            m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
+
+            if(    NavMethod != NavigationMethod.segment
+                && NavMethod != NavigationMethod.segmentLerp)
+            {
+                ProgressStepCycle(speed);
+            }
+
+            else
+            {
+                
+            }
+            
+
             UpdateCameraPosition(speed);
         }
-
 
         private void PlayJumpSound()
         {
@@ -347,88 +571,101 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float horizontal = 0.0f;
             float vertical = 0.0f;
 
-            if(NavMethod == NavigationMethod.normalLinear)
+            switch(NavMethod)
             {
-                horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
-                vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
-            }
-
-            else if(NavMethod == NavigationMethod.normalAccel)
-            {
-                horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
-                vertical = CrossPlatformInputManager.GetAxis("Vertical");
-            }
-
-            else if (NavMethod == NavigationMethod.segment)
-            {
-                if (Input.GetKeyDown(KeyCode.W)
-                || Input.GetKeyDown(KeyCode.S)
-                || Input.GetKeyDown(KeyCode.A)
-                || Input.GetKeyDown(KeyCode.D))
+                case NavigationMethod.normalLinear:
                 {
                     horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                     vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+
+
+
+                    break;
                 }
-            }
 
-            else if(NavMethod == NavigationMethod.normalLinearLerp)
-            {
-                if(lerpMoving == false)
+                case NavigationMethod.normalAccel:
                 {
-                    if(Input.GetKey(KeyCode.W)
-                    || Input.GetKey(KeyCode.S)
-                    || Input.GetKey(KeyCode.A)
-                    || Input.GetKey(KeyCode.D))
-                    {
-                        lerpMoving = true;
+                    horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
+                    vertical = CrossPlatformInputManager.GetAxis("Vertical");
 
+                    break;
+                }
+
+                case NavigationMethod.segment:
+                {
+                    if (Input.GetKeyDown(KeyCode.W)
+                    || Input.GetKeyDown(KeyCode.S)
+                    || Input.GetKeyDown(KeyCode.A)
+                    || Input.GetKeyDown(KeyCode.D))
+                    {
                         horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                         vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
 
-                       
+                        
                     }
-                }
-            }
 
-            else if (NavMethod == NavigationMethod.normalAccelLerp)
-            {
-                if (lerpMoving == false)
+                    break;
+                }
+
+                case NavigationMethod.normalLinearLerp:
                 {
-                    if (Input.GetKey(KeyCode.W)
-                    || Input.GetKey(KeyCode.S)
-                    || Input.GetKey(KeyCode.A)
-                    || Input.GetKey(KeyCode.D))
+                    if(lerpMoving == false)
                     {
-                        lerpMoving = true;
+                        if(Input.GetKey(KeyCode.W)
+                        || Input.GetKey(KeyCode.S)
+                        || Input.GetKey(KeyCode.A)
+                        || Input.GetKey(KeyCode.D))
+                        {
+                            lerpMoving = true;
 
-                        horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
-                        vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
-
-
+                            horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                            vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+                            
+                        }
                     }
-                }
-            }
 
-            else if (NavMethod == NavigationMethod.segmentLerp)
-            {
-                if (lerpMoving == false)
+                    break;
+                }
+
+                case NavigationMethod.normalAccelLerp:
                 {
-                    if (Input.GetKey(KeyCode.W)
-                    || Input.GetKey(KeyCode.S)
-                    || Input.GetKey(KeyCode.A)
-                    || Input.GetKey(KeyCode.D))
+                    if (lerpMoving == false)
                     {
-                        lerpMoving = true;
+                        if (Input.GetKey(KeyCode.W)
+                        || Input.GetKey(KeyCode.S)
+                        || Input.GetKey(KeyCode.A)
+                        || Input.GetKey(KeyCode.D))
+                        {
+                            lerpMoving = true;
 
-                        horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
-                        vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+                            horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                            vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
 
-
+                        }
                     }
+
+                    break;
+                }
+
+                case NavigationMethod.segmentLerp:
+                {
+                    if (lerpMoving == false)
+                    {
+                        if (Input.GetKey(KeyCode.W)
+                        || Input.GetKey(KeyCode.S)
+                        || Input.GetKey(KeyCode.A)
+                        || Input.GetKey(KeyCode.D))
+                        {
+                            //lerpMoving = true;
+                            horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                            vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+                            
+                        }
+                    }
+
+                    break;
                 }
             }
-
-            
 
 
             bool waswalking = m_IsWalking;
@@ -441,14 +678,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // set the desired speed to be walking or running
             speed = m_IsWalking ? m_WalkSpeed : m_RunSpeed;
 
-
+            if(NavMethod == NavigationMethod.segment ||
+                NavMethod == NavigationMethod.segmentLerp)
+            {
+                speed = segmentSpeed;
+            }
 
             m_Input = new Vector2(horizontal, vertical);
 
             // normalize input if it exceeds 1 in combined length:
             if (m_Input.sqrMagnitude > 1)
             {
-                m_Input.Normalize();
+                //m_Input.Normalize();
             }
 
             // handle speed change to give an fov kick
@@ -458,6 +699,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 StopAllCoroutines();
                 StartCoroutine(!m_IsWalking ? m_FovKick.FOVKickUp() : m_FovKick.FOVKickDown());
             }
+
+            if(NavMethod == NavigationMethod.segmentLerp && lerpMoving == false)
+            {
+                Vector3 desiredMove = transform.forward * m_Input.y + transform.right * m_Input.x;
+                if(desiredMove != Vector3.zero)
+                {
+                    lerpMoving = true;
+
+                    StartCoroutine(lerpMovement(desiredMove, LerpTime, speed));
+                }
+                
+            }
+            
         }
 
 
@@ -482,5 +736,87 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
             body.AddForceAtPosition(m_CharacterController.velocity*0.1f, hit.point, ForceMode.Impulse);
         }
+
+        IEnumerator lerpMovement(Vector3 destination, float lerpTime, float speed)
+        {
+
+            float t = 0.0f;
+
+            float seconds = lerpTime;
+
+            Vector3 start = transform.position;
+
+            switch (NavMethod)
+            {
+                case NavigationMethod.normalLinearLerp:
+                    {
+                        while (t <= 1.0f)
+                        {
+                            t += Time.deltaTime / seconds;
+
+                            Vector3 newPos = Vector3.Lerp(start, destination, t);
+
+                            MovePosition(newPos, speed);
+
+                            yield return new WaitForFixedUpdate();
+                        }
+
+                        break;
+                    }
+
+
+                case NavigationMethod.normalAccelLerp:
+                    {
+                        while (t <= 1.0f)
+                        {
+                            t += Time.deltaTime / seconds;
+
+                            Vector3 newPos = Vector3.Lerp(start, destination, Mathf.SmoothStep(0.0f, 1.0f, t));
+
+                            MovePosition(newPos, speed);
+
+                            yield return new WaitForFixedUpdate();
+                        }
+
+                        break;
+                    }
+
+                case NavigationMethod.segmentLerp:
+                    {
+
+                        if (DimScreen == true)
+                        {
+                            StartCoroutine(curtainOn());
+                        }
+
+
+                        // break lerp up into segments
+                        float segmentPercent = 1.0f / (float)LerpSegments;
+
+                        while (t <= 1.0f)
+                        {
+                            t += LerpTime * segmentPercent;
+
+                            MovePosition(destination, speed);
+
+                            yield return new WaitForSeconds(LerpTime * segmentPercent);
+                        }
+
+                        if (DimScreen == true)
+                        {
+                            StartCoroutine(curtainOff());
+                        }
+
+                        break;
+                    }
+            }
+
+
+
+            lerpMoving = false;
+
+            yield return null;
+        }
+
     }
 }

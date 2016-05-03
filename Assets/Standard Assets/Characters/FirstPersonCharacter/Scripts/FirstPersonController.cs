@@ -113,6 +113,46 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_UseHeadBob = bob;
         }
 
+        public void SetFOVKick(bool kick)
+        {
+            m_UseFovKick = kick;
+        }
+        public void ChangeNavMethod(int method)
+        {
+            switch (method)
+            {
+                case 0:
+                    NavMethod = NavigationMethod.normalLinear;
+
+                    break;
+
+                case 1:
+                    NavMethod = NavigationMethod.normalAccel;
+
+                    break;
+
+                case 2:
+                    NavMethod = NavigationMethod.segment;
+
+                    break;
+
+                case 3:
+                    NavMethod = NavigationMethod.segmentLerp;
+
+                    break;
+
+                case 4:
+                    NavMethod = NavigationMethod.normalLinearLerp;
+
+                    break;
+
+                case 5:
+                    NavMethod = NavigationMethod.normalAccelLerp;
+
+                    break;
+            }
+        }
+
         private IEnumerator curtainOn()
         {
             float t = 0.0f;
@@ -737,6 +777,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             body.AddForceAtPosition(m_CharacterController.velocity*0.1f, hit.point, ForceMode.Impulse);
         }
 
+       
         IEnumerator lerpMovement(Vector3 destination, float lerpTime, float speed)
         {
 

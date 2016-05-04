@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.VR;
 using UnityEngine.UI;
 using System.Collections;
 using UnityStandardAssets.CrossPlatformInput;
@@ -37,7 +38,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
     {
         [SerializeField] private bool m_IsWalking;
         [SerializeField] private float m_WalkSpeed;
-        [SerializeField] private float m_RunSpeed;
+        [SerializeField]
+        private float m_RunSpeed;
+        [SerializeField]
+        private float segmentSpeed;
         [SerializeField] [Range(0f, 1f)] private float m_RunstepLenghten;
         [SerializeField] private float m_JumpSpeed;
         [SerializeField] private float m_StickToGroundForce;
@@ -52,7 +56,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
-
+        
+        
         
         [SerializeField] private VignetteAndChromaticAberration Vignette;
         [SerializeField] private Camera Cam;
@@ -67,8 +72,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         public NavigationMethod NavMethod;
 
         public CurtainState CurState;
-
-        private Rigidbody rigidbody;
+        public float LerpTime;
+        public int LerpSegments;
 
         private Camera m_Camera;
         private bool m_Jump;
@@ -107,6 +112,46 @@ namespace UnityStandardAssets.Characters.FirstPerson
         public void SetHeadBob(bool bob)
         {
             m_UseHeadBob = bob;
+        }
+
+        public void SetFOVKick(bool kick)
+        {
+            m_UseFovKick = kick;
+        }
+        public void ChangeNavMethod(int method)
+        {
+            switch (method)
+            {
+                case 0:
+                    NavMethod = NavigationMethod.normalLinear;
+
+                    break;
+
+                case 1:
+                    NavMethod = NavigationMethod.normalAccel;
+
+                    break;
+
+                case 2:
+                    NavMethod = NavigationMethod.segment;
+
+                    break;
+
+                case 3:
+                    NavMethod = NavigationMethod.segmentLerp;
+
+                    break;
+
+                case 4:
+                    NavMethod = NavigationMethod.normalLinearLerp;
+
+                    break;
+
+                case 5:
+                    NavMethod = NavigationMethod.normalAccelLerp;
+
+                    break;
+            }
         }
 
         private IEnumerator curtainOn()
@@ -181,10 +226,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             yield return null;
         }
 
-        private void Awake()
-        {
-            rigidbody = GetComponent<Rigidbody>();
-        }
 
         // Use this for initialization
         private void Start()
@@ -240,17 +281,44 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             float speed;
             GetInput(out speed);
-            // always move along the camera forward as it is the direction that it being aimed at
-            Vector3 desiredMove = transform.forward*m_Input.y + transform.right*m_Input.x;
 
-            switch(NavMethod)
+            // always move along the camera forward as it is the direction that it being aimed at
+            Vector3 desiredMove = Cam.transform.forward*m_Input.y + Cam.transform.right*m_Input.x;
+            Debug.Log(transform.forward);
+            if(NavMethod == NavigationMethod.segmentLerp)
+            {
+                
+            }
+
+
+            else
+            {
+                MovePosition(desiredMove, speed);
+            }
+            
+        }
+
+        private void MovePosition(Vector3 destination, float speed)
+        {
+            // get a normal for the surface that is being touched to move along it
+            RaycastHit hitInfo;
+            Physics.SphereCast(transform.position, m_CharacterController.radius, Vector3.down, out hitInfo,
+                               m_CharacterController.height / 2f);
+
+            destination = Vector3.ProjectOnPlane(destination, hitInfo.normal);//.normalized;
+
+            m_MoveDir.x = destination.x * speed;
+            m_MoveDir.z = destination.z * speed;
+
+            Debug.Log("speed: " + speed);
+
+            switch (NavMethod)
             {
                 case NavigationMethod.normalLinear:
                     {
-
                         if (DimScreen == true)
                         {
-                            if (desiredMove != Vector3.zero)
+                            if (destination != Vector3.zero)
                             {
                                 switch (CurState)
                                 {
@@ -263,7 +331,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                                 }
                             }
 
-                            if (desiredMove == Vector3.zero)
+                            if (destination == Vector3.zero)
                             {
                                 switch (CurState)
                                 {
@@ -277,16 +345,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             }
                         }
 
-                        movePosition(desiredMove, speed);
-
                         break;
                     }
-                
+
                 case NavigationMethod.normalAccel:
                     {
                         if (DimScreen == true)
                         {
-                            if (desiredMove != Vector3.zero)
+                            if (destination != Vector3.zero)
                             {
                                 switch (CurState)
                                 {
@@ -299,7 +365,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                                 }
                             }
 
-                            if (desiredMove == Vector3.zero)
+                            if (destination == Vector3.zero)
                             {
                                 switch (CurState)
                                 {
@@ -313,13 +379,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             }
                         }
 
-                        movePosition(desiredMove, speed);
-
-
-
                         break;
                     }
-                /*
+
                 case NavigationMethod.segment:
                     {
                         if (Input.GetKeyDown(KeyCode.W)
@@ -327,17 +389,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         || Input.GetKeyDown(KeyCode.A)
                         || Input.GetKeyDown(KeyCode.D))
                         {
-                            float horizontal = Input.GetAxisRaw("Horizontal");
-                            float vertical = Input.GetAxisRaw("Vertical");
-                            Vector3 movement = SegmentSpeed * MovementSpeed * (transform.forward * vertical * ForwardSpeed + transform.right * horizontal * StrafeSpeed) * Time.deltaTime;
-                            
-                            movePosition(rigidbody.position + movement);
+
+                            PlayFootStepAudio();
                         }
 
                         break;
                     }
-                   */
-                /*
+
                 case NavigationMethod.normalLinearLerp:
                     {
                         if (lerpMoving == false)
@@ -347,33 +405,26 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             || Input.GetKey(KeyCode.A)
                             || Input.GetKey(KeyCode.D))
                             {
-                                if (lerpMoving == false)
+                                lerpMoving = true;
+
+                                if (DimScreen == true)
                                 {
-                                    lerpMoving = true;
-
-                                    float horizontal = Input.GetAxisRaw("Horizontal");
-                                    float vertical = Input.GetAxisRaw("Vertical");
-
-                                    Vector3 movement = LerpDistance * MovementSpeed * (transform.forward * vertical * ForwardSpeed + transform.right * horizontal * StrafeSpeed) * Time.deltaTime;
-
-                                    if (DimScreen == true)
+                                    if (destination != Vector3.zero)
                                     {
-                                        if (movement != Vector3.zero)
+                                        switch (CurState)
                                         {
-                                            switch (CurState)
-                                            {
-                                                case CurtainState.off:
-                                                    {
-                                                        StartCoroutine(curtainOn());
+                                            case CurtainState.off:
+                                                {
+                                                    StartCoroutine(curtainOn());
 
-                                                        break;
-                                                    }
-                                            }
+                                                    break;
+                                                }
                                         }
                                     }
-
-                                    StartCoroutine(lerpMovement(rigidbody.position + movement, LerpTime));
                                 }
+
+                                //StartCoroutine(lerpMovement(rigidbody.position + movement, LerpTime));
+                                
                             }
 
                             else
@@ -404,33 +455,26 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             || Input.GetKey(KeyCode.A)
                             || Input.GetKey(KeyCode.D))
                             {
-                                if (lerpMoving == false)
+                                lerpMoving = true;
+
+                                if (DimScreen == true)
                                 {
-                                    lerpMoving = true;
-
-                                    float horizontal = Input.GetAxisRaw("Horizontal");
-                                    float vertical = Input.GetAxisRaw("Vertical");
-
-                                    Vector3 movement = LerpDistance * MovementSpeed * (transform.forward * vertical * ForwardSpeed + transform.right * horizontal * StrafeSpeed) * Time.deltaTime;
-
-                                    if (DimScreen == true)
+                                    if (destination != Vector3.zero)
                                     {
-                                        if (movement != Vector3.zero)
+                                        switch (CurState)
                                         {
-                                            switch (CurState)
-                                            {
-                                                case CurtainState.off:
-                                                    {
-                                                        StartCoroutine(curtainOn());
+                                            case CurtainState.off:
+                                                {
+                                                    StartCoroutine(curtainOn());
 
-                                                        break;
-                                                    }
-                                            }
+                                                    break;
+                                                }
                                         }
                                     }
-
-                                    StartCoroutine(lerpMovement(rigidbody.position + movement, LerpTime));
                                 }
+
+                                //StartCoroutine(lerpMovement(rigidbody.position + movement, LerpTime));
+                                
                             }
                             else
                             {
@@ -454,45 +498,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                 case NavigationMethod.segmentLerp:
                     {
-                        if (Input.GetKey(KeyCode.W)
-                            || Input.GetKey(KeyCode.S)
-                            || Input.GetKey(KeyCode.A)
-                            || Input.GetKey(KeyCode.D))
-                        {
-                            if (lerpMoving == false)
-                            {
-                                lerpMoving = true;
-
-                                float horizontal = Input.GetAxisRaw("Horizontal");
-                                float vertical = Input.GetAxisRaw("Vertical");
-
-                                Vector3 movement = LerpDistance * MovementSpeed * (transform.forward * vertical * ForwardSpeed + transform.right * horizontal * StrafeSpeed) * Time.deltaTime;
-
-
-                                StartCoroutine(lerpMovement(rigidbody.position + movement, LerpTime));
-                            }
-
-                        }
+                        PlayFootStepAudio();
 
                         break;
                     }
-                 */
             }
-
-            
-        }
-
-        private void movePosition(Vector3 desiredMove, float speed)
-        {
-            // get a normal for the surface that is being touched to move along it
-            RaycastHit hitInfo;
-            Physics.SphereCast(transform.position, m_CharacterController.radius, Vector3.down, out hitInfo,
-                               m_CharacterController.height / 2f);
-            desiredMove = Vector3.ProjectOnPlane(desiredMove, hitInfo.normal);//.normalized;
-
-            m_MoveDir.x = desiredMove.x * speed;
-            m_MoveDir.z = desiredMove.z * speed;
-
 
             if (m_CharacterController.isGrounded)
             {
@@ -510,9 +520,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
             }
+
             m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
 
-            ProgressStepCycle(speed);
+            if(    NavMethod != NavigationMethod.segment
+                && NavMethod != NavigationMethod.segmentLerp)
+            {
+                ProgressStepCycle(speed);
+            }
+
+            else
+            {
+                
+            }
+            
+
             UpdateCameraPosition(speed);
         }
 
@@ -586,9 +608,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private void GetInput(out float speed)
         {
             // Read input
+
             float horizontal = 0.0f;
             float vertical = 0.0f;
-
 
             switch(NavMethod)
             {
@@ -596,6 +618,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                     vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+
+
 
                     break;
                 }
@@ -617,6 +641,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     {
                         horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                         vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
+
+                        
                     }
 
                     break;
@@ -635,8 +661,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                             horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                             vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
-
-                       
+                            
                         }
                     }
 
@@ -657,7 +682,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                             horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                             vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
 
-
                         }
                     }
 
@@ -673,21 +697,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
                         || Input.GetKey(KeyCode.A)
                         || Input.GetKey(KeyCode.D))
                         {
-                            lerpMoving = true;
-
+                            //lerpMoving = true;
                             horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                             vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
-
-
+                            
                         }
                     }
 
                     break;
                 }
             }
-            
 
-            
 
             bool waswalking = m_IsWalking;
 
@@ -698,6 +718,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
 #endif
             // set the desired speed to be walking or running
             speed = m_IsWalking ? m_WalkSpeed : m_RunSpeed;
+
+            if(NavMethod == NavigationMethod.segment ||
+                NavMethod == NavigationMethod.segmentLerp)
+            {
+                speed = segmentSpeed;
+            }
+
             m_Input = new Vector2(horizontal, vertical);
 
             // normalize input if it exceeds 1 in combined length:
@@ -713,12 +740,30 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 StopAllCoroutines();
                 StartCoroutine(!m_IsWalking ? m_FovKick.FOVKickUp() : m_FovKick.FOVKickDown());
             }
+
+            if(NavMethod == NavigationMethod.segmentLerp && lerpMoving == false)
+            {
+                Vector3 desiredMove = transform.forward * m_Input.y + transform.right * m_Input.x;
+                if(desiredMove != Vector3.zero)
+                {
+                    lerpMoving = true;
+
+                    StartCoroutine(lerpMovement(desiredMove, LerpTime, speed));
+                }
+                
+            }
+            
         }
 
 
         private void RotateView()
         {
-            m_MouseLook.LookRotation (transform, m_Camera.transform);
+            //m_MouseLook.LookRotation (transform, m_Camera.transform);
+            //Quaternion quat = InputTracking.GetLocalRotation(VRNode.LeftEye);
+
+            //transform.rotation = quat;
+
+            
         }
 
 
@@ -737,5 +782,88 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
             body.AddForceAtPosition(m_CharacterController.velocity*0.1f, hit.point, ForceMode.Impulse);
         }
+
+       
+        IEnumerator lerpMovement(Vector3 destination, float lerpTime, float speed)
+        {
+
+            float t = 0.0f;
+
+            float seconds = lerpTime;
+
+            Vector3 start = transform.position;
+
+            switch (NavMethod)
+            {
+                case NavigationMethod.normalLinearLerp:
+                    {
+                        while (t <= 1.0f)
+                        {
+                            t += Time.deltaTime / seconds;
+
+                            Vector3 newPos = Vector3.Lerp(start, destination, t);
+
+                            MovePosition(newPos, speed);
+
+                            yield return new WaitForFixedUpdate();
+                        }
+
+                        break;
+                    }
+
+
+                case NavigationMethod.normalAccelLerp:
+                    {
+                        while (t <= 1.0f)
+                        {
+                            t += Time.deltaTime / seconds;
+
+                            Vector3 newPos = Vector3.Lerp(start, destination, Mathf.SmoothStep(0.0f, 1.0f, t));
+
+                            MovePosition(newPos, speed);
+
+                            yield return new WaitForFixedUpdate();
+                        }
+
+                        break;
+                    }
+
+                case NavigationMethod.segmentLerp:
+                    {
+
+                        if (DimScreen == true)
+                        {
+                            StartCoroutine(curtainOn());
+                        }
+
+
+                        // break lerp up into segments
+                        float segmentPercent = 1.0f / (float)LerpSegments;
+
+                        while (t <= 1.0f)
+                        {
+                            t += LerpTime * segmentPercent;
+
+                            MovePosition(destination, speed);
+
+                            yield return new WaitForSeconds(LerpTime * segmentPercent);
+                        }
+
+                        if (DimScreen == true)
+                        {
+                            StartCoroutine(curtainOff());
+                        }
+
+                        break;
+                    }
+            }
+
+
+
+            lerpMoving = false;
+
+            yield return null;
+        }
+
     }
 }

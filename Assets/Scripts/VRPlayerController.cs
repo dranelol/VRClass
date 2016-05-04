@@ -47,12 +47,12 @@ public class VRPlayerController : MonoBehaviour
 
     public float LerpDistance;
 
-    public float LerpTime;
+    
 
     public float DimTime;
 
     public float DimDelay;
-
+    public float LerpTime;
     public int LerpSegments;
 
     private bool lerpMoving;
@@ -399,17 +399,17 @@ public class VRPlayerController : MonoBehaviour
                 break;
 
             case 3:
-                NavMethod = NavigationMethod.normalLinearLerp;
+                NavMethod = NavigationMethod.segmentLerp;
 
                 break;
 
             case 4:
-                NavMethod = NavigationMethod.normalAccelLerp;
+                NavMethod = NavigationMethod.normalLinearLerp;
 
                 break;
 
             case 5:
-                NavMethod = NavigationMethod.segmentLerp;
+                NavMethod = NavigationMethod.normalAccelLerp;
 
                 break;
         }

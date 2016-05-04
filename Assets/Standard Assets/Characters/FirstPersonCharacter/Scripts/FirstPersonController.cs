@@ -113,6 +113,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         public void SetDimScreen(bool dim)
         {
             DimScreen = dim;
+           
         }
 
         public void SetHeadBob(bool bob)
@@ -408,12 +409,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                 case NavigationMethod.segment:
                     {
-                        if (Input.GetKeyDown(KeyCode.W)
-                        || Input.GetKeyDown(KeyCode.S)
-                        || Input.GetKeyDown(KeyCode.A)
-                        || Input.GetKeyDown(KeyCode.D))
+                        if (Input.GetKeyDown(KeyCode.W))
                         {
-
+                            
                             PlayFootStepAudio();
                         }
 
@@ -424,10 +422,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     {
                         if (lerpMoving == false)
                         {
-                            if (Input.GetKey(KeyCode.W)
-                            || Input.GetKey(KeyCode.S)
-                            || Input.GetKey(KeyCode.A)
-                            || Input.GetKey(KeyCode.D))
+                            if (Input.GetKey(KeyCode.W))
                             {
                                 lerpMoving = true;
 
@@ -474,10 +469,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     {
                         if (lerpMoving == false)
                         {
-                            if (Input.GetKey(KeyCode.W)
-                            || Input.GetKey(KeyCode.S)
-                            || Input.GetKey(KeyCode.A)
-                            || Input.GetKey(KeyCode.D))
+                            if (Input.GetKey(KeyCode.W))
                             {
                                 lerpMoving = true;
 
@@ -640,7 +632,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 case NavigationMethod.normalLinear:
                 {
-                    horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                    //horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                     vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
 
 
@@ -650,7 +642,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                 case NavigationMethod.normalAccel:
                 {
-                    horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
+                    //horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
                     vertical = CrossPlatformInputManager.GetAxis("Vertical");
 
                     break;
@@ -658,12 +650,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                 case NavigationMethod.segment:
                 {
-                    if (Input.GetKeyDown(KeyCode.W)
-                    || Input.GetKeyDown(KeyCode.S)
-                    || Input.GetKeyDown(KeyCode.A)
-                    || Input.GetKeyDown(KeyCode.D))
+                    if (Input.GetKeyDown(KeyCode.W))
                     {
-                        horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                        //horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                         vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
 
                         
@@ -676,14 +665,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     if(lerpMoving == false)
                     {
-                        if(Input.GetKey(KeyCode.W)
-                        || Input.GetKey(KeyCode.S)
-                        || Input.GetKey(KeyCode.A)
-                        || Input.GetKey(KeyCode.D))
+                        if(Input.GetKey(KeyCode.W))
                         {
                             lerpMoving = true;
 
-                            horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                            //horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                             vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
                             
                         }
@@ -696,14 +682,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     if (lerpMoving == false)
                     {
-                        if (Input.GetKey(KeyCode.W)
-                        || Input.GetKey(KeyCode.S)
-                        || Input.GetKey(KeyCode.A)
-                        || Input.GetKey(KeyCode.D))
+                        if (Input.GetKey(KeyCode.W))
                         {
                             lerpMoving = true;
 
-                            horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                            //horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                             vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
 
                         }
@@ -716,13 +699,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     if (lerpMoving == false)
                     {
-                        if (Input.GetKey(KeyCode.W)
-                        || Input.GetKey(KeyCode.S)
-                        || Input.GetKey(KeyCode.A)
-                        || Input.GetKey(KeyCode.D))
+                        if (Input.GetKey(KeyCode.W))
                         {
                             //lerpMoving = true;
-                            horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+                            //horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                             vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
                             
                         }

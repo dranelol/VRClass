@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.VR;
 using UnityEngine.UI;
 using System.Collections;
 using UnityStandardAssets.CrossPlatformInput;
@@ -282,8 +283,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             GetInput(out speed);
 
             // always move along the camera forward as it is the direction that it being aimed at
-            Vector3 desiredMove = transform.forward*m_Input.y + transform.right*m_Input.x;
-
+            Vector3 desiredMove = Cam.transform.forward*m_Input.y + Cam.transform.right*m_Input.x;
+            Debug.Log(transform.forward);
             if(NavMethod == NavigationMethod.segmentLerp)
             {
                 
@@ -757,7 +758,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void RotateView()
         {
-            m_MouseLook.LookRotation (transform, m_Camera.transform);
+            //m_MouseLook.LookRotation (transform, m_Camera.transform);
+            //Quaternion quat = InputTracking.GetLocalRotation(VRNode.LeftEye);
+
+            //transform.rotation = quat;
+
+            
         }
 
 

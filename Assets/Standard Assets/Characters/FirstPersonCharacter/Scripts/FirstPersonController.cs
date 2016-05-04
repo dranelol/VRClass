@@ -56,11 +56,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
         [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
         [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
-        
-        
-        
+
+        public bool UIActive = true;
+        private Rigidbody rigidbody;
+
+
+
+        public float NormalFOV;
+        public float TunnelVisionFOV;
+
         [SerializeField] private VignetteAndChromaticAberration Vignette;
-        [SerializeField] private Camera Cam;
+        [SerializeField] public Camera Cam;
         [SerializeField] private bool DimScreen;
         [SerializeField] private Image Curtain;
         private bool lerpMoving;
@@ -94,13 +100,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (vignette == true)
             {
                 Vignette.enabled = true;
-                Cam.fieldOfView = 90;
+                Cam.fieldOfView = TunnelVisionFOV;
             }
 
             else
             {
                 Vignette.enabled = false;
-                Cam.fieldOfView = 60;
+                Cam.fieldOfView = NormalFOV;
             }
         }
 
@@ -226,12 +232,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
             yield return null;
         }
 
-
+        private void Awake()
+        {
+            rigidbody = GetComponent<Rigidbody>();
+        }
         // Use this for initialization
         private void Start()
         {
             m_CharacterController = GetComponent<CharacterController>();
-            m_Camera = Camera.main;
+            m_Camera = Cam.GetComponent<Camera>();
             m_OriginalCameraPosition = m_Camera.transform.localPosition;
             m_FovKick.Setup(m_Camera);
             m_HeadBob.Setup(m_Camera, m_StepInterval);
@@ -279,6 +288,21 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void FixedUpdate()
         {
+            if(UIActive == true)
+            {
+                //rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+                //Cam.transform.rotation = Quaternion.identity;
+                //Cam.transform.localRotation = Quaternion.identity;
+                //UnityEngine.VR.VRSettings.enabled = false;
+            }
+
+            if (UIActive == false)
+            {
+                //rigidbody.constraints = RigidbodyConstraints.None;
+
+                //UnityEngine.VR.VRSettings.enabled = true;
+            }
+
             float speed;
             GetInput(out speed);
 

@@ -172,6 +172,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float end = 1.0f;
 
             CurState = CurtainState.turningOn;
+            
+            // spawn curtain in front of player
+            Vector3 newPosition = transform.position + (Cam.transform.forward * 0.8f);
+
+            Curtain.transform.position = newPosition;
+
+            // look at player
+
+            Curtain.transform.LookAt(transform);
+
+            // rotate 180 y
+
+            Curtain.transform.Rotate(0.0f, 180.0f, 0.0f);
 
             while (t <= 1.0f)
             {
@@ -276,6 +289,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             m_PreviouslyGrounded = m_CharacterController.isGrounded;
+
+            // spawn curtain in front of player
+            Vector3 newPosition = transform.position + (Cam.transform.forward * 0.8f);
+
+            Curtain.transform.position = newPosition;
+
+            // look at player
+
+            Curtain.transform.LookAt(transform);
+
+            // rotate 180 y
+
+            Curtain.transform.Rotate(0.0f, 180.0f, 0.0f);
         }
 
 
@@ -422,7 +448,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     {
                         if (lerpMoving == false)
                         {
-                            if (Input.GetKey(KeyCode.W))
+                            if (Input.GetKey(KeyCode.W)
+                                || Input.GetKey(KeyCode.S))
                             {
                                 lerpMoving = true;
 
@@ -469,7 +496,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     {
                         if (lerpMoving == false)
                         {
-                            if (Input.GetKey(KeyCode.W))
+                            if (Input.GetKey(KeyCode.W)
+                                || Input.GetKey(KeyCode.S))
                             {
                                 lerpMoving = true;
 
@@ -650,7 +678,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
                 case NavigationMethod.segment:
                 {
-                    if (Input.GetKeyDown(KeyCode.W))
+                    if (Input.GetKey(KeyCode.W)
+                                || Input.GetKey(KeyCode.S))
                     {
                         //horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
                         vertical = CrossPlatformInputManager.GetAxisRaw("Vertical");
@@ -665,7 +694,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     if(lerpMoving == false)
                     {
-                        if(Input.GetKey(KeyCode.W))
+                        if (Input.GetKey(KeyCode.W)
+                                || Input.GetKey(KeyCode.S))
                         {
                             lerpMoving = true;
 
@@ -682,7 +712,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     if (lerpMoving == false)
                     {
-                        if (Input.GetKey(KeyCode.W))
+                        if (Input.GetKey(KeyCode.W)
+                                || Input.GetKey(KeyCode.S))
                         {
                             lerpMoving = true;
 
@@ -699,7 +730,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     if (lerpMoving == false)
                     {
-                        if (Input.GetKey(KeyCode.W))
+                        if (Input.GetKey(KeyCode.W)
+                                || Input.GetKey(KeyCode.S))
                         {
                             //lerpMoving = true;
                             //horizontal = CrossPlatformInputManager.GetAxisRaw("Horizontal");
@@ -747,8 +779,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
             if(NavMethod == NavigationMethod.segmentLerp && lerpMoving == false)
             {
-                Vector3 desiredMove = transform.forward * m_Input.y + transform.right * m_Input.x;
-                if(desiredMove != Vector3.zero)
+                Vector3 desiredMove = Cam.transform.forward * m_Input.y + Cam.transform.right * m_Input.x;
+                if (desiredMove != Vector3.zero)
                 {
                     lerpMoving = true;
 
